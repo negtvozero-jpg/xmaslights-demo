@@ -126,7 +126,8 @@
 
     <!-- Events -->
     <button onclick="window.XmasOverlay && window.XmasOverlay.triggerEvent(0)">Test Sub (0)</button>
-    <button onclick="window.XmasOverlay && window.XmasOverlay.triggerEvent(7)">Test Raid (7)</button>
+    <button onclick="window.XmasOverlay && window.XmasOverlay.triggerEvent(1)">Test Sub T2 (1)</button>
+    <button onclick="window.XmasOverlay && window.XmasOverlay.triggerEvent(2)">Test Sub T3 (2)</button>
 
     <!-- Colors -->
     <div id="xmas-colors">
@@ -145,13 +146,6 @@
     <button onclick="window.XmasOverlay && window.XmasOverlay.setIdleSpeedMode(0)">Idle slow</button>
     <button onclick="window.XmasOverlay && window.XmasOverlay.setIdleSpeedMode(1)">Idle normal</button>
     <button onclick="window.XmasOverlay && window.XmasOverlay.setIdleSpeedMode(2)">Idle fast</button>
-  </div>
-
-  <div class="xmas-controls-row">
-    <strong>Alert speed:</strong>
-    <button onclick="window.XmasOverlay && window.XmasOverlay.setAlertSpeedMode(0)">Alert slow</button>
-    <button onclick="window.XmasOverlay && window.XmasOverlay.setAlertSpeedMode(1)">Alert normal</button>
-    <button onclick="window.XmasOverlay && window.XmasOverlay.setAlertSpeedMode(2)">Alert fast</button>
   </div>
 
   <!-- Rive runtime -->
@@ -354,14 +348,6 @@
         const restart = this.globalVM.trigger("RestartIdle");
         if (restart) restart.trigger();
       }
-
-      setAlertSpeedMode(mode) {
-        if (!this.ensureReady()) return;
-        const m = Math.max(0, Math.min(2, Number(mode) || 0));
-        const p = this.globalVM.number("AlertSpeed");
-        if (!p) return;
-        p.value = m;
-      }
     }
 
     window.addEventListener("load", () => {
@@ -371,4 +357,5 @@
 
 </body>
 </html>
+
 
