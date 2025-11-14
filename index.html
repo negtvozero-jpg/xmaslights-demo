@@ -281,27 +281,37 @@
       }
 
       setColorsFromInputs() {
-        if (!this.ensureReady()) return;
+  if (!this.ensureReady()) return;
 
-        const p = hexToRiveInt(document.getElementById("colorPrimary").value);
-        const s = hexToRiveInt(document.getElementById("colorSecondary").value);
-        const a = hexToRiveInt(document.getElementById("colorAccent").value);
+  const primaryInput = document.getElementById("colorPrimary");
+  const secondaryInput = document.getElementById("colorSecondary");
+  const accentInput = document.getElementById("colorAccent");
 
-        if (p != null) {
-          const prop = this.globalVM.number("ColorPrimary");
-          if (prop) prop.value = p;
-        }
+  const primaryInt = hexToRiveInt(primaryInput.value);
+  const secondaryInt = hexToRiveInt(secondaryInput.value);
+  const accentInt = hexToRiveInt(accentInput.value);
 
-        if (s != null) {
-          const prop = this.globalVM.number("ColorSecondary");
-          if (prop) prop.value = s;
-        }
-
-        if (a != null) {
-          const prop = this.globalVM.number("ColorAccent");
-          if (prop) prop.value = a;
-        }
+  const applyColor = (name, intVal) => {
+    if (intVal == null) return;
+    // tenta Number primeiro
+    let prop = this.globalVM.number(name);
+    if (prop) {
+      prop.value = intVal;
+      return;
+    }
+    // se for propriedade Color, tenta color()
+    if (this.globalVM.color) {
+      prop = this.globalVM.color(name);
+      if (prop) {
+        prop.value = intVal;
       }
+    }
+  };
+
+  applyColor("ColorPrimary", primaryInt);
+  applyColor("ColorSecondary", secondaryInt);
+  applyColor("ColorAccent", accentInt);
+}
 
       applyStyleToInstance(name, styleIndex) {
         const setBool = (propName, value) => {
@@ -363,6 +373,7 @@
 
 </body>
 </html>
+
 
 
 
