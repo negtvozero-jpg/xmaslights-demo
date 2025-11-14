@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>XmasLightsOverlay Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    body {
+      margin: 20px;
+      background: #000;
+      color: #fff;
+      font-family: sans-serif;
+    }
+
+    .xmas-wrapper {
+      display: flex;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    #xmas-rive-canvas {
+      max-width: 100%;
+      width: 1000px;
+      height: auto;
+      border: 1px solid #444;
+      background: #000;
+      display: block;
+    }
+
+    .xmas-controls {
+      margin: 12px auto;
+      max-width: 1100px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .xmas-controls-row {
+      width: 100%;
+      max-width: 1100px;
+      margin: 4px auto;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .xmas-controls button {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid #444;
+      background: #222;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .xmas-controls button:hover {
+      background: #333;
+    }
+
+    #xmas-colors {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      color: #ddd;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    #xmas-colors input[type="color"] {
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: none;
+      background: transparent;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>XmasLightsOverlay — Demo Interativo</h2>
+
+  <div class="xmas-wrapper">
+    <canvas
+      id="xmas-rive-canvas"
+      width="1920"
+      height="450"
+    ></canvas>
+  </div>
+
+  <div class="xmas-controls">
+    <!-- Idle styles -->
+    <button onclick="window.XmasOverlay && window.XmasOverlay.setIdleStyle(0)">Idle style 0</button>
+    <button onclick="window.XmasOverlay && window.XmasOverlay.setIdleStyle(1)">Idle style 1</button>
+    <button onclick="window.XmasOverlay && window.XmasOverlay.setIdleIdleStyle(2)">Idle style 2</button>
+    <button onclick="window.XmasOverlay && window.XmasOverlay.setIdleStyle(3)">Idle style 3</button>
+    <button onclick="window.XmasOverlay && window.XmasOverlay.setIdleStyle(4)">Idle style 4</button>
+    <button onclick="window.XmasOverlay && window.XmasOverlay.setIdleStyle(5)">Idle style 5</button>
+
+    <!-- Bulb styles -->
+    <div class="xmas-controls-row">
+      <strong>Bulb styles:</strong>
+      Primary:
+      <select id="primaryStyleSelect">
+        <option value="0">Classic</option>
+        <option value="1">Star</option>
+        <option value="2">Heart</option>
+        <option value="3">Snowflake</option>
+        <option value="4">Glerp</option>
+      </select>
+
+      Secondary:
+      <select id="secondaryStyleSelect">
+        <option value="">(same as primary)</option>
+        <option value="0">Classic</option>
+        <option value="1">Star</option>
+        <option value="2">Heart</option>
+        <option value="3">Snowflake</option>
+        <option value="4">Glerp</option>
+      </select>
+
+      <button onclick="window.XmasOverlay && window.XmasOverlay.applyBulbStylesFromUI()">Apply bulb styles</button>
+    </div>
+
+    <!-- Events -->
+    <button onclick="window.XmasOverlay && window.XmasOverlay.triggerEvent(0)">Test Sub (0)</button>
+    <button onclick="window.XmasOverlay && window.XmasOverlay.triggerEvent(7)">Test Raid (7)</button>
+
+    <!-- Colors -->
+    <div id="xmas-colors">
+      Primary
+      <input id="colorPrimary" type="color" value="#ff80aa" />
+      Secondary
+      <input id="colorSecondary" type="color" value="#80ffcc" />
+      Accent
+      <input id="colorAccent" type="color" value="#ffd27f" />
+      <button onclick="window.XmasOverlay && window.XmasOverlay.setColorsFromInputs()">Apply colors</button>
+    </div>
+  </div>
+
+  <div class="xmas-controls-row">
+    <strong>Idle speed:</strong>
+    <button onclick="window.XmasOverlay && window.XmasOverlay.setIdleSpeedMode(0)">Idle slow</button>
+    <button onclick="window.XmasOverlay && window.XmasOverlay.setIdleSpeedMode(1)">Idle normal</button>
+    <button onclick="window.XmasOverlay && window.XmasOverlay.setIdleSpeedMode(2)">Idle fast</button>
+  </div>
+
+  <div class="xmas-controls-row">
+    <strong>Alert speed:</strong>
+    <button onclick="window.XmasOverlay && window.XmasOverlay.setAlertSpeedMode(0)">Alert slow</button>
+    <button onclick="window.XmasOverlay && window.XmasOverlay.setAlertSpeedMode(1)">Alert normal</button>
+    <button onclick="window.XmasOverlay && window.XmasOverlay.setAlertSpeedMode(2)">Alert fast</button>
+  </div>
+
+  <!-- Rive runtime -->
+  <script src="https://unpkg.com/@rive-app/webgl2@latest"></script>
+
+  <script>
+    const RIV_URL =
+      "https://cdn.jsdelivr.net/gh/negtvozero-jpg/XmasLights@04729288371c5172b48eafaab8cfd29c539024c2/XmasLightsOverlay.riv";
+
+    const { Rive, Fit, Alignment, Layout } = rive;
+
+    const BulbStyles = {
+      CLASSIC: 0,
+      STAR: 1,
+      HEART: 2,
+      SNOWFLAKE: 3,
+      GLERP: 4,
+    };
+
+    function hexToRiveInt(hex) {
+      if (!hex) return null;
+      let c = hex.trim();
+      if (c.startsWith("#")) c = c.slice(1);
+      if (c.startsWith("0x") || c.startsWith("0X")) c = c.slice(2);
+      if (c.length === 6) c = "FF" + c;
+      if (c.length !== 8) return null;
+      const n = parseInt(c, 16);
+      if (isNaN(n)) return null;
+      return n;
+    }
+
+    class XmasLightsOverlay {
+      constructor() {
+        this.canvasEl = document.getElementById("xmas-rive-canvas");
+        this.riveInstance = null;
+        this.rootVM = null;
+        this.globalVM = null;
+        this.bulbInstanceNames = [];
+        this.init();
+      }
+
+      bindViewModels() {
+        const root = this.riveInstance.viewModelInstance;
+        if (!root) return;
+
+        this.rootVM = root;
+        this.bulbInstanceNames = [];
+
+        for (let i = 1; i <= 64; i++) {
+          const candidates = [
+            `Instance ${i}`,
+            `instance ${i}`,
+            `Ins${i}`,
+            `ins${i}`,
+          ];
+          let found = null;
+          for (const name of candidates) {
+            const vm = root.viewModel(name);
+            if (vm) {
+              found = name;
+              break;
+            }
+          }
+          if (found) this.bulbInstanceNames.push(found);
+        }
+
+        if (this.bulbInstanceNames.length > 0) {
+          const firstName = this.bulbInstanceNames[0];
+          const firstMeta = root.viewModel(firstName);
+          if (!firstMeta) return;
+
+          const globalVM = firstMeta.viewModel("property of Global");
+          if (globalVM) this.globalVM = globalVM;
+        }
+      }
+
+      ensureReady() {
+        if (!this.riveInstance) return false;
+        if (!this.rootVM || !this.globalVM || this.bulbInstanceNames.length === 0) {
+          this.bindViewModels();
+        }
+        return !!this.globalVM;
+      }
+
+      init() {
+        this.riveInstance = new Rive({
+          src: RIV_URL,
+          canvas: this.canvasEl,
+          autoplay: true,
+          autoBind: true,
+          artboard: "XmasOverlay",
+          layout: new Layout({
+            fit: Fit.Contain,
+            alignment: Alignment.Center,
+          }),
+          stateMachines: "StateMachine1",
+          onLoad: () => {
+            this.riveInstance.resizeDrawingSurfaceToCanvas();
+            this.bindViewModels();
+          },
+        });
+
+        window.addEventListener(
+          "resize",
+          () => this.riveInstance && this.riveInstance.resizeDrawingSurfaceToCanvas(),
+          false
+        );
+      }
+
+      setIdleStyle(styleIndex) {
+        if (!this.ensureReady()) return;
+        const prop = this.globalVM.number("IdleStyle");
+        if (!prop) return;
+        prop.value = Number(styleIndex) || 0;
+
+        const restart = this.globalVM.trigger("RestartIdle");
+        if (restart) restart.trigger();
+      }
+
+      triggerEvent(eventType) {
+        if (!this.ensureReady()) return;
+        const typeProp = this.globalVM.number("EventType");
+        const trig = this.globalVM.trigger("EventTrigger");
+        if (!typeProp || !trig) return;
+        typeProp.value = Number(eventType) || 0;
+        trig.trigger();
+      }
+
+      setColorsFromInputs() {
+        if (!this.ensureReady()) return;
+
+        const p = hexToRiveInt(document.getElementById("colorPrimary").value);
+        const s = hexToRiveInt(document.getElementById("colorSecondary").value);
+        const a = hexToRiveInt(document.getElementById("colorAccent").value);
+
+        if (p != null) {
+          const prop = this.globalVM.number("ColorPrimary");
+          if (prop) prop.value = p;
+        }
+
+        if (s != null) {
+          const prop = this.globalVM.number("ColorSecondary");
+          if (prop) prop.value = s;
+        }
+
+        if (a != null) {
+          const prop = this.globalVM.number("ColorAccent");
+          if (prop) prop.value = a;
+        }
+      }
+
+      applyStyleToInstance(name, styleIndex) {
+        const setBool = (propName, value) => {
+          const p = this.rootVM.boolean(`${name}/${propName}`);
+          if (p) p.value = value;
+        };
+
+        setBool("IsClassic", false);
+        setBool("IsStar", false);
+        setBool("IsHeart", false);
+        setBool("IsSnowflake", false);
+        setBool("IsGlerp", false);
+
+        switch (styleIndex) {
+          case 0: setBool("IsClassic", true); break;
+          case 1: setBool("IsStar", true); break;
+          case 2: setBool("IsHeart", true); break;
+          case 3: setBool("IsSnowflake", true); break;
+          case 4: setBool("IsGlerp", true); break;
+        }
+      }
+
+      setBulbStyles(primary, secondary = null) {
+        if (!this.ensureReady()) return;
+
+        primary = Number(primary) || 0;
+        secondary =
+          secondary === null || secondary === "" ? primary : Number(secondary);
+
+        this.bulbInstanceNames.forEach((name) => {
+          const p = this.rootVM.boolean(`${name}/IsPrimary`);
+          const isPrimary = p ? !!p.value : true;
+          this.applyStyleToInstance(name, isPrimary ? primary : secondary);
+        });
+      }
+
+      applyBulbStylesFromUI() {
+        const p = document.getElementById("primaryStyleSelect").value;
+        const s = document.getElementById("secondaryStyleSelect").value;
+        this.setBulbStyles(p, s);
+      }
+
+      setIdleSpeedMode(mode) {
+        if (!this.ensureReady()) return;
+        const m = Math.max(0, Math.min(2, Number(mode) || 0));
+        const p = this.globalVM.number("IdleSpeed");
+        if (!p) return;
+        p.value = m;
+
+        const restart = this.globalVM.trigger("RestartIdle");
+        if (restart) restart.trigger();
+      }
+
+      setAlertSpeedMode(mode) {
+        if (!this.ensureReady()) return;
+        const m = Math.max(0, Math.min(2, Number(mode) || 0));
+        const p = this.globalVM.number("AlertSpeed");
+        if (!p) return;
+        p.value = m;
+      }
+    }
+
+    window.addEventListener("load", () => {
+      window.XmasOverlay = new XmasLightsOverlay();
+    });
+  </script>
+
+</body>
+</html>
