@@ -143,6 +143,8 @@
       <input id="colorSecondary" type="color" value="#80ffcc" />
       Accent
       <input id="colorAccent" type="color" value="#ffd27f" />
+      Wire
+      <input id="colorWire" type="color" value="#0A2B0C" />
       <button onclick="window.XmasOverlay && window.XmasOverlay.setColorsFromInputs()">Apply colors</button>
     </div>
   </div>
@@ -286,6 +288,22 @@
   const primaryInput = document.getElementById("colorPrimary");
   const secondaryInput = document.getElementById("colorSecondary");
   const accentInput = document.getElementById("colorAccent");
+  const wireInput = document.getElementById("colorWire");
+  const wireInt = hexToRiveInt(wireInput.value);
+
+  if (wireInt != null) {
+    const numProp =
+      this.globalVM.number("ColorWire") ||
+      (this.globalVM.color && this.globalVM.color("ColorWire")) ||
+      this.globalVM.color("WireColor");
+  
+    if (numProp) {
+      numProp.value = wireInt;
+      logDebug(`[XMAS] ColorWire set to 0x${wireInt.toString(16)}`);
+    } else {
+      logDebug("[XMAS] ColorWire not found (Number/Color) on Global.");
+    }
+  }
 
   const primaryInt = hexToRiveInt(primaryInput.value);
   const secondaryInt = hexToRiveInt(secondaryInput.value);
@@ -373,6 +391,7 @@
 
 </body>
 </html>
+
 
 
 
